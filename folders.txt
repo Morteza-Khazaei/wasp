@@ -1,0 +1,5 @@
+[WASP_Inputs]
+repWork=./wasp_work
+repL2  =./L2-Products
+repL3  =./L3-Products
+exeWASP=/path/to/wasp
