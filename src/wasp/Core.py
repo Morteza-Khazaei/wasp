@@ -1,15 +1,9 @@
+import sys
 import os
-import glob
 import datetime
 import argparse
 import jdatetime
-import numpy as np
-from osgeo import gdal
 from collections import defaultdict
-
-import zipfile
-import requests
-import json
 
 
 from wasp.base_comparison import BaseComparison
@@ -20,45 +14,26 @@ from wasp.base_comparison import BaseComparison
 
 
 
-class WASP(BaseComparison):
+class WaspHandeler(BaseComparison):
     """
         Weighted Average Synthesis Processor (WASP)
     """
-    def __init__(self, repL2:str, repL3:str, NRGB:bool=True, url:str='http://192.168.66.66:9090', username:str='mortezakhazaei1370@gmail.com', password:str='m3541532') -> None:
-        self.repL2 = repL2
-        self.repL3 = repL3
-        if NRGB:
-            self.repNRGB = '/'.join(repL3.split('/')[:-2].append('composite'))
+
+    def __init__(self, args) -> None:
+
+
+        self.rep_l2, self.rep_l3, self.wasp = args.input, args.out, args.wasp
         self.l2_products = self.__get_all_available_products()
         self.fl2_products = self.__filter_products()
 
-        self.url = url
-        auth_token = self.__get_token(username, password)
-        self.headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Token {}'.format(auth_token)
-        }
-
         return None
-
-
-    def __get_token(self, username, password):
-        token_url = f'{self.url}/gcms/accounts/api/auth/login'
-        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-        auth_data = {
-            'email': username,
-            'password': password
-        }
-        resp = requests.post(token_url, data=json.dumps(auth_data), headers=headers).json()
-
-        return resp['token']
-
+    
 
     def __get_all_available_products(self):
-        repL2_dirs = os.listdir(self.repL2)
+        repL2_dirs = os.listdir(self.rep_l2)
         l2 = defaultdict(list)
         for tile in repL2_dirs:
-            dir_1st = os.path.join(self.repL2, tile)
+            dir_1st = os.path.join(self.rep_l2, tile)
             group_by_date = defaultdict(list)
             for root, dirs, files in os.walk(dir_1st, topdown=False):
                 for name in files:
@@ -83,15 +58,10 @@ class WASP(BaseComparison):
         for tile in dict(self.l2_products).keys():
             for month, l2_products in dict(self.l2_products[tile]).items():
 
-                l3_out_path = os.path.join(self.repL3, tile)
+                l3_out_path = os.path.join(self.rep_l3, tile)
                 
                 if not os.path.exists(l3_out_path):
                     os.makedirs(l3_out_path)
-                
-                l3_out_path_NRGB = os.path.join(self.repNRGB, tile)
-
-                if not os.path.exists(l3_out_path_NRGB):
-                    os.makedirs(l3_out_path_NRGB)
 
                 # Get all infiles that match tile and file pattern
                 dir_list = os.listdir(l3_out_path)
@@ -106,94 +76,45 @@ class WASP(BaseComparison):
                     previous_image_date.append(dt_jalali)
 
                 if not str(month) in previous_image_date:
-                    filtered_l2_products[tile].append(l2_products, l3_out_path, l3_out_path_NRGB)
+                    filtered_l2_products[tile].append(l2_products, l3_out_path)
                 
         return filtered_l2_products
 
 
     def execute(self):
+        sys.path.append(self.wasp)
+        import WASP
         for tile in dict(self.fl2_products).keys():
-            for l2_products, l3_out_path, l3_out_path_NRGB in dict(self.fl2_products[tile]).items():
+            for l2_products, l3_out_path in dict(self.fl2_products[tile]).items():
                 ts = WASP.TemporalSynthesis(self.createArgs(l2_products, l3_out_path))
                 ts.run()
-            if self.repNRGB:
-                # Get all infiles that match tile and file pattern
-                out_dir_list = os.listdir(l3_out_path_NRGB)
-                for pid in out_dir_list:
-                    platform, date_obj, product, tile_number, c, version = pid.split('_')
 
-                    # Get year and month from file name
-                    dt_string = date_obj.split('-')[0]
 
-                    timestamp = datetime.datetime.strptime(dt_string, '%Y%m%d').timestamp()
-                    dt_jalali = jdatetime.datetime.fromtimestamp(timestamp)
-                    yyyymm = str(dt_jalali.strftime("%Y%m")) + '01'
-                    product_name = ''.join(['_'.join(['SENTINEL2X', '-'.join([yyyymm, '000000', '000']), 
-                                                         product, tile_number, c, version])])
-                    fname = product_name + '.tif'
-                    zfname = product_name + '.zip'
-                    out_file_path = os.path.join(l3_out_path_NRGB, fname)
-                    out_zipfile_path = os.path.join(l3_out_path_NRGB, zfname)
-                    
-                    if not os.path.exists(out_zipfile_path):
-                        
-                        out_sub_path = os.path.join(l3_out_path, pid)
-                        mask_path = os.path.join(out_sub_path, 'MASKS')
-                        mask_files = glob.glob('%s/*.tif' % (mask_path))
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-e", "--wasp",help="Path to WASP application. Required.", required=True, type=str)
+    parser.add_argument("-i", "--input",help="The Metadata input products in MUSCATE format. Required.", nargs="+", required=True, type=str)
+    parser.add_argument("-o", "--out", help="Output directory. Required.", required=True, type=str)
+    parser.add_argument("-t", "--tempout", help="Temporary output directory. If none is given, it is set to the value of --out", required=False, type=str)
+    parser.add_argument("-v", "--version", help="Parameter version. Default is 1.0", required = False, type=str)
+    parser.add_argument("-log", "--logging", help="Path to log-file. Default is in the current directory. If none is given, no log-file will be created.", required = False, default="", type=str)
+    parser.add_argument("-d" ,"--date", help="L3A synthesis date in the format 'YYYYMMDD'. If none, then the middle date between all products is used", required=False, type=str)
+    parser.add_argument("-r", "--removeTemp", help="Removes the temporary created files after use. Default is true", required=False)
+    parser.add_argument("--verbose", help="Verbose output of the processing. Default is True", default="True", type=str)
+    parser.add_argument("--synthalf", help="Half synthesis period in days. Default for S2 is 23, for Venus is 9", required=False, type=int)
+    parser.add_argument("--pathprevL3A", help="Path to the previous L3A product folder. Does not have to be set.", required=False, type=str)
+    parser.add_argument("--cog", help="Write the product conform to the CloudOptimized-Geotiff format. Default is false", required=False)
+    parser.add_argument("--weightaotmin", help="AOT minimum weight. Default is 0.33", required=False, type=float)
+    parser.add_argument("--weightaotmax", help="AOT maximum weight. Default is 1", required=False, type=float)
+    parser.add_argument("--aotmax", help="AOT Maximum value. Default is 0.8", required=False, type=float)
+    parser.add_argument("--coarseres", help="Resolution for Cloud weight resampling. Default is 240" , required=False, type=int)
+    parser.add_argument("--kernelwidth", help="Kernel width for the Cloud Weight Calculation. Default is 801", required=False, type=int)
+    parser.add_argument("--sigmasmallcld", help="Sigma for small Clouds. Default is 2", required=False, type=float)
+    parser.add_argument("--sigmalargecld",  help="Sigma for large Clouds. Default is 10", required=False, type=float)
+    parser.add_argument("--weightdatemin", help="Minimum Weight for Dates. Default is 0.5", required=False, type=float)
+    parser.add_argument("--nthreads", help="Number of threads to be used for running the chain. Default is 8.", required=False, type=int)
+    parser.add_argument("--scatteringcoeffpath", help="Path to the scattering coefficients files. If none, it will be searched for using the OTB-App path. Only has to be set for testing-purposes", required=False, type=str)
 
-                        # Where no data
-                        if len(mask_files) == 0:
-                            print('WARNING: No products found to merge.')
-                            continue
-                        
-                        mask_names = ['0_WGT_R1',]
-                        selected_mask_file = [f for f in mask_files if os.path.splitext(f)[0].split('/')[-1].split('-')[-1] in mask_names][0]
-
-                        mask_ds = gdal.Open(selected_mask_file)
-                        geotransform = mask_ds.GetGeoTransform()
-                        x_size = mask_ds.RasterXSize
-                        y_size = mask_ds.RasterYSize
-                        srs = mask_ds.GetProjectionRef()
-
-                        infiles = glob.glob('%s/*.tif' % (out_sub_path))
-                        band_names = ['B2', 'B3', 'B4', 'B8']
-                        selected_files = [f for f in infiles if os.path.splitext(f)[0].split('/')[-1].split('_')[-1] in band_names]
-
-                        arrayList = [gdal.Open(infile).ReadAsArray() for infile in selected_files]
-
-                        B = np.stack(arrayList)
-
-                        driver = gdal.GetDriverByName('GTiff')
-                        dataset_out = driver.Create(out_file_path, x_size, y_size, 4, gdal.GDT_Int16)
-
-                        # Set transform/proj from those found above
-                        dataset_out.SetGeoTransform(geotransform)
-                        dataset_out.SetProjection(srs)
-                        for band in range(dataset_out.RasterCount):
-                            band += 1
-                            dataset_out.GetRasterBand(band).SetNoDataValue(-10000)
-
-                        # Write Raster To TIFF File
-                        dataset_out.WriteRaster(0, 0, x_size, y_size, B.tobytes(), x_size, y_size, band_list=[1, 2, 3, 4])
-
-                        
-                        gdal.Warp(out_file_path, dataset_out, dstSRS='EPSG:3857', xRes=10, yRes=10, 
-                                  creationOptions=['COMPRESS=LZW', 'PREDICTOR=2'])
-                        
-                        print ("Save File is ok!")
-                        dataset_out.FlushCache()
-                        
-                        zf = zipfile.ZipFile(out_zipfile_path, "w", zipfile.ZIP_DEFLATED)
-                        zf.write(out_file_path, fname)
-                        zf.close()
-
-                        data = {
-                            'year': dt_jalali.year,
-                            'month': dt_jalali.month,
-                            'scene_name': tile_number
-                        }
-
-                        files = {'zip_file': open(os.path.join(out_zipfile_path, zfname), 'rb')}
-                        resp =  requests.post(f'{self.url}/gcms/api/Sentinel2Raster/', data=data, headers=self.headers, files=files)
-                        print(resp.status_code)
-                        print(resp.json())
+    args = parser.parse_args()
+    wasp = WaspHandeler(args)
+    wasp.execute()
