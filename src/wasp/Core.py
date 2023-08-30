@@ -67,16 +67,18 @@ class WaspHandeler:
                     os.makedirs(l3_out_path)
 
                 # Get all infiles that match tile and file pattern
-                dir_list = filter(os.path.isdir, os.listdir(l3_out_path))
+                dir_list = os.listdir(l3_out_path)
                 
                 previous_image_date = list()
                 for l3 in dir_list:
-                    # Get year and month from file name
-                    dt_string = l3.split('_')[1].split('-')[0]
+                    full_path = os.path.join(l3_out_path, l3)
+                    if os.path.isdir(full_path):
+                        # Get year and month from file name
+                        dt_string = l3.split('_')[1].split('-')[0]
 
-                    timestamp = datetime.datetime.strptime(dt_string, '%Y%m%d').timestamp()
-                    dt_jalali = jdatetime.datetime.fromtimestamp(timestamp).strftime("%Y%m")
-                    previous_image_date.append(dt_jalali)
+                        timestamp = datetime.datetime.strptime(dt_string, '%Y%m%d').timestamp()
+                        dt_jalali = jdatetime.datetime.fromtimestamp(timestamp).strftime("%Y%m")
+                        previous_image_date.append(dt_jalali)
 
                 if not str(month) in previous_image_date:
                     filtered_l2_products[tile].append([l2_products, l3_out_path])
