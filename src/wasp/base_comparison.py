@@ -58,6 +58,7 @@ class BaseComparison():
         args.scatteringcoeffpath = None
         args.logging = "" #Disable logging
         args.nthreads = 8
+        args.maxcorrection = None
         return args
 
     def setupEnvironment(self):
