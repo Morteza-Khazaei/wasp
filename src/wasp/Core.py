@@ -58,7 +58,7 @@ class WaspHandeler(BaseComparison):
         
         filtered_l2_products = defaultdict(list)
         for tile in self.l2_products.keys():
-            print(tile)
+            print(self.l2_products[tile])
             for month, l2_products in dict(self.l2_products[tile]).items():
                 print(month, l2_products)
 
