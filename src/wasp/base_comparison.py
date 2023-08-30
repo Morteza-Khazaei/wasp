@@ -32,10 +32,9 @@ import argparse
 
 
 class BaseComparison():
-    WASP_TEST_ENV_VAR = "WASP_TEST"
 
     @staticmethod
-    def createArgs(in_path, out_path, date = None, synthalf = None):
+    def createArgs(in_path, out_path, date=None, synthalf=None):
         args = argparse.Namespace()
         args.input = in_path
         args.out = out_path
@@ -51,14 +50,16 @@ class BaseComparison():
         args.weightaotmax = None
         args.aotmax = None
         args.coarseres = None
+        args.maxcorrection = None
         args.kernelwidth = None
         args.sigmasmallcld = None
         args.sigmalargecld = None
         args.weightdatemin = None
         args.scatteringcoeffpath = None
+        args.dircorlutpath = None
+        args.dircormode = None
         args.logging = "" #Disable logging
-        args.nthreads = 8
-        args.maxcorrection = 0.7
+        args.nthreads = None
         return args
 
     def setupEnvironment(self):
