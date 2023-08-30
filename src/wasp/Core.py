@@ -25,7 +25,7 @@ class WaspHandeler(BaseComparison):
         self.rep_l2, self.rep_l3, self.wasp = args.input, args.out, args.wasp
         self.l2_products = dict(self.__get_all_available_products())
         self.fl2_products = dict(self.__filter_products())
-        print(self.fl2_products)
+
 
         return None
     
@@ -88,10 +88,8 @@ class WaspHandeler(BaseComparison):
         import WASP
         for tile in dict(self.fl2_products).keys():
             for l2_products, l3_out_path in self.fl2_products[tile]:
-                print(l2_products, l3_out_path)
-
-            #     ts = WASP.TemporalSynthesis(self.createArgs(l2_products, l3_out_path))
-            #     ts.run()
+                ts = WASP.TemporalSynthesis(self.createArgs(l2_products, l3_out_path))
+                ts.run()
 
 
 def main():
