@@ -58,7 +58,9 @@ class WaspHandeler(BaseComparison):
         
         filtered_l2_products = defaultdict(list)
         for tile in dict(self.l2_products).keys():
+            print(tile)
             for month, l2_products in dict(self.l2_products[tile]).items():
+                print(month, l2_products)
 
                 l3_out_path = os.path.join(self.rep_l3, tile)
                 
