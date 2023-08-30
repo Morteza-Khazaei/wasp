@@ -25,6 +25,7 @@ class WaspHandeler(BaseComparison):
         self.rep_l2, self.rep_l3, self.wasp = args.input, args.out, args.wasp
         self.l2_products = dict(self.__get_all_available_products())
         self.fl2_products = dict(self.__filter_products())
+        print(self.fl2_products)
 
         return None
     
