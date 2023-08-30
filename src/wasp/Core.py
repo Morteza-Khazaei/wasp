@@ -120,7 +120,7 @@ def main():
     parser.add_argument("--pathprevL3A", help="Path to the previous L3A product folder. Does not have to be set.", 
                         required=False, type=str)
     parser.add_argument("--cog", help="Write the product conform to the CloudOptimized-Geotiff format. Default is false", 
-                        required=False, default="Flase")
+                        required=False, default="False)
     parser.add_argument("--weightaotmin", help="AOT minimum weight. Default is 0.33", 
                         required=False, type=float)
     parser.add_argument("--weightaotmax", help="AOT maximum weight. Default is 1", 
