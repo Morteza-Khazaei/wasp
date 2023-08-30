@@ -23,7 +23,6 @@ class WaspHandeler(BaseComparison):
 
 
         self.rep_l2, self.rep_l3, self.wasp = args.input, args.out, args.wasp
-        print(self.rep_l2, self.rep_l3, self.wasp)
         self.l2_products = self.__get_all_available_products()
         self.fl2_products = self.__filter_products()
 
@@ -93,8 +92,8 @@ class WaspHandeler(BaseComparison):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--wasp",help="Path to WASP application. Required.", required=True, type=str)
-    parser.add_argument("-i", "--input",help="The Metadata input products in MUSCATE format. Required.", nargs="+", required=True, type=str)
+    parser.add_argument("-e", "--wasp", help="Path to WASP application. Required.", required=True, type=str)
+    parser.add_argument("-i", "--input", help="The Metadata input products in MUSCATE format. Required.", required=True, type=str)
     parser.add_argument("-o", "--out", help="Output directory. Required.", required=True, type=str)
     parser.add_argument("-t", "--tempout", help="Temporary output directory. If none is given, it is set to the value of --out", required=False, type=str)
     parser.add_argument("-v", "--version", help="Parameter version. Default is 1.0", required = False, type=str)
