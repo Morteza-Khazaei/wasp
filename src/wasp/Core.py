@@ -24,7 +24,6 @@ class WaspHandeler(BaseComparison):
 
         self.rep_l2, self.rep_l3, self.wasp = args.input, args.out, args.wasp
         self.l2_products = dict(self.__get_all_available_products())
-        print(self.l2_products)
         self.fl2_products = self.__filter_products()
 
         return None
@@ -59,7 +58,6 @@ class WaspHandeler(BaseComparison):
         filtered_l2_products = defaultdict(list)
         for tile in self.l2_products.keys():
             for month, l2_products in dict(self.l2_products[tile][0]).items():
-                print(month, l2_products)
 
                 l3_out_path = os.path.join(self.rep_l3, tile)
                 
@@ -79,7 +77,7 @@ class WaspHandeler(BaseComparison):
                     previous_image_date.append(dt_jalali)
 
                 if not str(month) in previous_image_date:
-                    filtered_l2_products[tile].append(l2_products, l3_out_path)
+                    filtered_l2_products[tile].append([l2_products, l3_out_path])
                 
         return filtered_l2_products
 
