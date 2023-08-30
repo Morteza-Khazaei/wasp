@@ -67,7 +67,7 @@ class WaspHandeler:
                     os.makedirs(l3_out_path)
 
                 # Get all infiles that match tile and file pattern
-                dir_list = os.listdir(l3_out_path)
+                dir_list = filter(os.path.isdir, os.listdir(l3_out_path))
                 
                 previous_image_date = list()
                 for l3 in dir_list:
