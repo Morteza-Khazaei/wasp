@@ -48,7 +48,8 @@ class WaspHandeler(BaseComparison):
 
                         # Group by same month
                         group_by_date[dt_jalali].append(os.path.join(root, name))
-            l2[tile].append(group_by_date)
+            if not any(dict(group_by_date)):
+                l2[tile].append(group_by_date)
 
         return l2
 
