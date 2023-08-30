@@ -141,6 +141,8 @@ def main():
                         required=False, type=int)
     parser.add_argument("--scatteringcoeffpath", help="Path to the scattering coefficients files. If none, it will be searched for using the OTB-App path. Only has to be set for testing-purposes", 
                         required=False, type=str)
+    parser.add_argument("--maxcorrection", help="unknown variable!", 
+                        required=False, default=None)
 
     args = parser.parse_args()
     wasp = WaspHandeler(args)
