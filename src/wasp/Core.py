@@ -87,6 +87,7 @@ class WaspHandeler(BaseComparison):
         sys.path.append(self.wasp)
         import WASP
         for tile in dict(self.fl2_products).keys():
+            print(self.fl2_products)
             for l2_products, l3_out_path in dict(self.fl2_products[tile][0]).items():
                 ts = WASP.TemporalSynthesis(self.createArgs(l2_products, l3_out_path))
                 ts.run()
