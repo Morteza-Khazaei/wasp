@@ -98,58 +98,37 @@ class WaspHandeler:
 
 
 def main():
+    
     parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--wasp", help="Path to WASP application. Required.", 
-                        required=True, type=str)
-    parser.add_argument("-i", "--input", help="The Metadata input products in MUSCATE format. Required.", 
-                        required=True, type=str)
-    parser.add_argument("-o", "--out", help="Output directory. Required.", 
-                        required=True, type=str)
-    parser.add_argument("-t", "--tempout", help="Temporary output directory. If none is given, it is set to the value of --out", 
-                        required=False, type=str)
-    parser.add_argument("-v", "--version", help="Parameter version. Default is 1.0", 
-                        required=False, default="1.0", type=str)
-    parser.add_argument("-log", "--logging", help="Path to log-file. Default is in the current directory. If none is given, no log-file will be created.", 
-                        required=False, default="", type=str,)
-    parser.add_argument("-d" ,"--date", help="L3A synthesis date in the format 'YYYYMMDD'. If none, then the middle date between all products is used", 
-                        required=False, type=str)
-    parser.add_argument("-r", "--removeTemp", help="Removes the temporary created files after use. Default is true", 
-                        required=False)
+    parser.add_argument("-e", "--wasp", help="Path to WASP application. Required.", required=True, type=str)
+    parser.add_argument("-i", "--input", help="The Metadata input products in MUSCATE format. Required.", required=True, type=str)
+    parser.add_argument("--verbose", help="Verbose output of the processing. Default is True", default="True", type=str)
+    parser.add_argument("-o", "--out", help="Output directory. Required.", required=True, type=str)
+    parser.add_argument("-t", "--tempout", help="Temporary output directory. If none is given, it is set to the value of --out", required=False, type=str)
+    parser.add_argument("-v", "--version", help="Parameter version. Default is 1.0", required = False, type=str)
+    parser.add_argument("-log", "--logging", help="Path to log-file. Default is in the current directory. If none is given, no log-file will be created.", required = False, default="", type=str)
+    parser.add_argument("-d" ,"--date", help="L3A synthesis date in the format 'YYYYMMDD'. If none, then the middle date between all products is used", required=False, type=str)
+    parser.add_argument("--synthalf", help="Half synthesis period in days. Default for S2 is 23, for Venus is 9", required=False, type=int)
+    parser.add_argument("--pathprevL3A", help="Path to the previous L3A product folder. Does not have to be set.", required=False, type=str)
+    parser.add_argument("-r", "--removeTemp", help="Removes the temporary created files after use. Default is true", required=False)
+    parser.add_argument("--cog", help="Write the product conform to the CloudOptimized-Geotiff format. Default is false", required=False)
+    parser.add_argument("--weightaotmin", help="AOT minimum weight. Default is 0.33", required=False, type=float)
+    parser.add_argument("--weightaotmax", help="AOT maximum weight. Default is 1", required=False, type=float)
+    parser.add_argument("--aotmax", help="AOT Maximum value. Default is 0.8", required=False, type=float)
+    parser.add_argument("--coarseres", help="Resolution for Cloud weight resampling. Default is 240" , required=False, type=int)
+    parser.add_argument("--kernelwidth", help="Kernel width for the Cloud Weight Calculation. Default is 801", required=False, type=int)
+    parser.add_argument("--sigmasmallcld", help="Sigma for small Clouds. Default is 2", required=False, type=float)
+    parser.add_argument("--sigmalargecld",  help="Sigma for large Clouds. Default is 10", required=False, type=float)
+    parser.add_argument("--weightdatemin", help="Minimum Weight for Dates. Default is 0.5", required=False, type=float)
+    parser.add_argument("--nthreads", help="Number of threads to be used for running the chain. Default is 8.", required=False, type=int)
+    parser.add_argument("--scatteringcoeffpath", help="Path to the scattering coefficients files. If none, it will be searched for using the OTB-App path. Only has to be set for testing-purposes", required=False, type=str)    
+    parser.add_argument("--dircorlutpath", help="Path to the DIRCOR lut path.", required=False, type=str)
+    parser.add_argument("--dircormode", help="Mode for the directionnal correction either LUT or ROY (legacy). Force the mode even if other dircor params filled", required=False, type=str)
     parser.add_argument("-l", "--lightmode", help="Light mode, process Sentinel 2 with a resolution of 60m. Default is False",
                         required=False)
-    parser.add_argument("-b", "--bands", help="List of bands to keep in numerical order, B4 and B8 mandatory (only in light mode)", 
-                        required=False, type=str)
-    parser.add_argument("--verbose", help="Verbose output of the processing. Default is True", 
-                        default="True", type=str)
-    parser.add_argument("--synthalf", help="Half synthesis period in days. Default for S2 is 23, for Venus is 9", 
-                        required=False, type=int)
-    parser.add_argument("--pathprevL3A", help="Path to the previous L3A product folder. Does not have to be set.", 
-                        required=False, type=str)
-    parser.add_argument("--cog", help="Write the product conform to the CloudOptimized-Geotiff format. Default is false", 
-                        required=False, default="False")
-    parser.add_argument("--weightaotmin", help="AOT minimum weight. Default is 0.33", 
-                        required=False, type=float)
-    parser.add_argument("--weightaotmax", help="AOT maximum weight. Default is 1", 
-                        required=False, type=float)
-    parser.add_argument("--aotmax", help="AOT Maximum value. Default is 0.8", 
-                        required=False, type=float)
-    parser.add_argument("--coarseres", help="Resolution for Cloud weight resampling. Default is 240" , 
-                        required=False, type=int)
-    parser.add_argument("--kernelwidth", help="Kernel width for the Cloud Weight Calculation. Default is 801", 
-                        required=False, type=int)
-    parser.add_argument("--sigmasmallcld", help="Sigma for small Clouds. Default is 2", 
-                        required=False, type=float)
-    parser.add_argument("--sigmalargecld",  help="Sigma for large Clouds. Default is 10", 
-                        required=False, type=float)
-    parser.add_argument("--weightdatemin", help="Minimum Weight for Dates. Default is 0.5", 
-                        required=False, type=float)
-    parser.add_argument("--nthreads", help="Number of threads to be used for running the chain. Default is 8.", 
-                        required=False, type=int)
-    parser.add_argument("--scatteringcoeffpath", help="Path to the scattering coefficients files. If none, it will be searched for using the OTB-App path. Only has to be set for testing-purposes", 
-                        required=False, type=str)
-    parser.add_argument("--maxcorrection", help="unknown variable!", 
-                        required=False, default=None)
+    parser.add_argument("-b", "--bands", help="List of bands to keep in numerical order, B4 and B8 mandatory (only in light mode)", required=False, type=str)
     parser.add_argument("--writedts", help="Write DTS mask (only in lightmode)", required=False)
+
 
     args = parser.parse_args()
     wasp = WaspHandeler(args)
