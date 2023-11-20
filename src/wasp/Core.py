@@ -115,6 +115,8 @@ def main():
                         required=False, type=str)
     parser.add_argument("-r", "--removeTemp", help="Removes the temporary created files after use. Default is true", 
                         required=False)
+    parser.add_argument("-l", "--lightmode", help="Light mode, process Sentinel 2 with a resolution of 60m. Default is False",
+                        required=False)
     parser.add_argument("--verbose", help="Verbose output of the processing. Default is True", 
                         default="True", type=str)
     parser.add_argument("--synthalf", help="Half synthesis period in days. Default for S2 is 23, for Venus is 9", 
