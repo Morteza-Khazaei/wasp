@@ -117,6 +117,8 @@ def main():
                         required=False)
     parser.add_argument("-l", "--lightmode", help="Light mode, process Sentinel 2 with a resolution of 60m. Default is False",
                         required=False)
+    parser.add_argument("-b", "--bands", help="List of bands to keep in numerical order, B4 and B8 mandatory (only in light mode)", 
+                        required=False, type=str)
     parser.add_argument("--verbose", help="Verbose output of the processing. Default is True", 
                         default="True", type=str)
     parser.add_argument("--synthalf", help="Half synthesis period in days. Default for S2 is 23, for Venus is 9", 
@@ -147,6 +149,7 @@ def main():
                         required=False, type=str)
     parser.add_argument("--maxcorrection", help="unknown variable!", 
                         required=False, default=None)
+    parser.add_argument("--writedts", help="Write DTS mask (only in lightmode)", required=False)
 
     args = parser.parse_args()
     wasp = WaspHandeler(args)
