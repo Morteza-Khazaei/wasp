@@ -31,7 +31,7 @@ setup(
     install_requires = requirements,
     entry_points ={
         'console_scripts': [
-            'WASP = wasp.Core:main'
+            'WASP_PY = wasp.Core:main'
         ]
     },
     classifiers=[
