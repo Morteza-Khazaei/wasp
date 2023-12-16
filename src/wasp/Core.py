@@ -38,6 +38,7 @@ class WaspHandeler:
             dir_1st = os.path.join(self.rep_l2, tile)
             group_by_date = defaultdict(list)
             for root, dirs, files in os.walk(dir_1st, topdown=False):
+                if len(files) < 9: continue # This line will drop wrong L2A products that just has 3 files!
                 for name in files:
                     if name.endswith('MTD_ALL.xml'):
 
